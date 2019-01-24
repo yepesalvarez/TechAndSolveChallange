@@ -1,7 +1,5 @@
 package com.techandsolve.lazyloading.dominio;
 
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,7 +9,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.domain.Persistable;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table (name = "ejecuciones")
@@ -24,8 +21,7 @@ public class Ejecucion implements Persistable<Long> {
 	
 	@NotNull
 	@Column(name = "fecha")
-	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
-	Date fecha;
+	String fecha;
 	
 	@NotNull
 	@Column(name = "cedula")
@@ -42,11 +38,11 @@ public class Ejecucion implements Persistable<Long> {
 		return id;
 	}
 
-	public Date getFecha() {
+	public String getFecha() {
 		return fecha;
 	}
 
-	public void setFecha(Date fecha) {
+	public void setFecha(String fecha) {
 		this.fecha = fecha;
 	}
 
