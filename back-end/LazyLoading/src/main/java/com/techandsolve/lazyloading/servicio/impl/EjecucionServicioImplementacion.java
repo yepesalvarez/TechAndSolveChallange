@@ -37,33 +37,9 @@ public class EjecucionServicioImplementacion implements EjecucionServicio {
 		List<List<Integer>> carguePerezoso = ArchivoUtils.convertirArchivoAlista(ejecucion.getLinkInput());
 		List<String> carguePerezosoOutput = new ArrayList<>();
 		for(int i = 0; i < carguePerezoso.size(); i++) {
-			List<Integer> dia = carguePerezoso.get(i);
-			int itemsDisponibles = dia.size();
-			int viajes = 0;
-			//Se ordena ascendentemente el grupo de items y se analiza desde el más pesado al menos pesado
-			dia = dia.stream().sorted().collect(Collectors.toList());
-			int posicionItemDerecha = dia.size() - 1;
-			while (itemsDisponibles > 0) {
-				int pesoItemActual = dia.get(posicionItemDerecha);
-				int itemsNecesarios = 0;
-				int k = 0; 
-				boolean matchPeso = false;
-				while (!matchPeso && k < PesosItemsUtils.PESO_POR_ITEM.length) {
-					if (pesoItemActual >= PesosItemsUtils.PESO_POR_ITEM[k][0]) {
-						itemsNecesarios = PesosItemsUtils.PESO_POR_ITEM[k][1];
-						matchPeso = true;
-					}else {
-						k++;
-					}
-				}
-				if(itemsDisponibles >= itemsNecesarios) {
-					viajes++;
-					itemsDisponibles -= itemsNecesarios;
-					posicionItemDerecha -= 1;
-				}else {
-					itemsDisponibles = 0;
-				}
-			}
+			//Se ordena ascendentemente el grupo de items para analizar desde el más pesado al menos pesado
+			List<Integer >dia = carguePerezoso.get(i).stream().sorted().collect(Collectors.toList());
+			int viajes = calcularNroViajes(dia);
 			int caso = i + 1;
 			carguePerezosoOutput.add("Case #" + caso + ": " + viajes);
 		}
@@ -75,7 +51,35 @@ public class EjecucionServicioImplementacion implements EjecucionServicio {
 			return ejecucionRepositorio.save(ejecucion);
 		}
 	}
-
+	
+	private int calcularNroViajes(List<Integer> dia) {
+		int itemsDisponibles = dia.size();
+		int viajes = 0;
+		int posicionItemDerecha = dia.size() - 1;
+		while (itemsDisponibles > 0) {
+			int pesoItemActual = dia.get(posicionItemDerecha);
+			int itemsNecesarios = 0;
+			int k = 0; 
+			boolean matchPeso = false;
+			while (!matchPeso && k < PesosItemsUtils.PESO_POR_ITEM.length) {
+				if (pesoItemActual >= PesosItemsUtils.PESO_POR_ITEM[k][0]) {
+					itemsNecesarios = PesosItemsUtils.PESO_POR_ITEM[k][1];
+					matchPeso = true;
+				}else {
+					k++;
+				}
+			}
+			if(itemsDisponibles >= itemsNecesarios) {
+				viajes++;
+				itemsDisponibles -= itemsNecesarios;
+				posicionItemDerecha -= 1;
+			}else {
+				itemsDisponibles = 0;
+			}
+		}
+		return viajes;
+	}
+	
 	@Override
 	public List<Ejecucion> obtenerTodaEjecucion() {
 		return (List<Ejecucion>) ejecucionRepositorio.findAll();

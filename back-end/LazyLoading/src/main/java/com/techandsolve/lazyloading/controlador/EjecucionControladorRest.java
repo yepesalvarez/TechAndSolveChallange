@@ -37,7 +37,7 @@ public class EjecucionControladorRest extends AbstractControladorRest {
 	
 	@PostMapping(value = "/ejecucion")
 	public ResponseEntity<?> guardarEjecucion(@RequestParam (value = "input", required = true) MultipartFile archivoInput,
-												@RequestParam (value = "cedula", required = true) long cedula) throws IOException{
+												@RequestParam (value = "cedula", required = true) long cedula){
 		String archivoInputGuardado = ArchivoUtils.guardarArchivoTxt(archivoInput, rutaGuardadoArchivoInput);
 		if(archivoInputGuardado == null || !ArchivoUtils.validarInputLazyLoading(archivoInputGuardado)) {
 			return new ResponseEntity<>(getStatusBadRequest(), HttpStatus.BAD_REQUEST);

@@ -1,6 +1,8 @@
 package com.techandsolve.lazyloading.util;
 
 public class PesosItemsUtils {
+	
+	private PesosItemsUtils() {}
 
 	public static final int[][] PESO_POR_ITEM =
 		{{50, 1}, {25, 2}, {17, 3}, {13, 4},  {10, 5},

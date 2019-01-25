@@ -31,9 +31,9 @@ export class AppComponent implements OnInit {
     this.errorMessage = '';
     this._cargueService.cargarArchivo(this.nuevaCedula, this.nuevoInput).subscribe(
       response => {
+        this.listarHistorialEjecuciones();
         this.nuevaCedula = null;
         this.nuevoInput = null;
-        this.listarHistorialEjecuciones();
       },
       error => {
         const errorMessage = <any>error;

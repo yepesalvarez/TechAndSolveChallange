@@ -16,15 +16,15 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.techandsolve.lazyloading.util.excepciones.EjecucionException;
 
-@PropertySource("classpath:application.properties")
 public class ArchivoUtils {
 	
-	public static final String ARCHIVO_NO_VALIDO = "Archivo con formato no válido";
+	private ArchivoUtils() {}
+	
+	public static final String ARCHIVO_NO_VALIDO = "Archivo con formato no valido";
 	public static final String RUTA_NO_VALIDA = "No se puede guardar el archivo en ubicación indicada";
 	
 	public static final Logger LOGGER = LoggerFactory.getLogger(ArchivoUtils.class);
@@ -34,19 +34,14 @@ public class ArchivoUtils {
 			byte[] bytes = archivo.getBytes();
 			String nombreArchivoOriginal = archivo.getOriginalFilename();
 			String extension = obtenerExtensionArchivo(nombreArchivoOriginal);
-			if (extension == null || !extension.equalsIgnoreCase(".txt")) {
-				LOGGER.debug(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
-				return null;
-			}
-			String nombreArchivoGuardar = (obtenerNombreArchivoSinExtension(nombreArchivoOriginal, extension)
-					+ "_" + new Date().toString().replaceAll(":", "-") + extension).replace(" ", "");
+			String nombreArchivoGuardar = crearRutaNombreArchivo(nombreArchivoOriginal, extension);
+			if(nombreArchivoGuardar == null) {return null;}
 			String ruta = uri + nombreArchivoGuardar;
 			Path path = Paths.get(ruta);
 			Files.write(path, bytes);
 			return ruta;
-		} catch (IOException e) {
-			LOGGER.debug(new EjecucionException(RUTA_NO_VALIDA).getMessage());
-			LOGGER.debug(e.getMessage());
+		} catch (Exception e) {
+			LOGGER.error(new EjecucionException(RUTA_NO_VALIDA).getMessage());
 			return null;
 		}
 		
@@ -54,24 +49,18 @@ public class ArchivoUtils {
 	
 	public static String guardarArchivoTxt(List<String> lista, String uri) {
 		String extension = obtenerExtensionArchivo(uri);
-		if (extension == null || !extension.equalsIgnoreCase(".txt")) {
-			LOGGER.debug(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
-			return null;
-		}
-		String ruta = obtenerNombreArchivoSinExtension(uri, extension)
-				+ "_" + new Date().toString().replaceAll(":", "-") + extension.replace(" ", "");
+		String ruta = crearRutaNombreArchivo(uri, extension);
+		if(ruta == null) {return null;}
 		try (FileWriter writer = new FileWriter(ruta)){
 			for(String linea : lista) {
 				writer.write(linea);
 				writer.write(String.format("%n"));
 			}
 			return ruta;
-		} catch (IOException e) {
-			LOGGER.debug(new EjecucionException(RUTA_NO_VALIDA).getMessage());
-			LOGGER.debug(e.getMessage());
+		} catch (Exception e) {
+			LOGGER.error(new EjecucionException(RUTA_NO_VALIDA).getMessage());
 			return null;
 		}
-		
 	}
 	
 	public static String obtenerExtensionArchivo(String nombreArchivo) {
@@ -90,6 +79,15 @@ public class ArchivoUtils {
 		return nombreCompletoArchivo.substring(0, posicionExtension);
 	}
 	
+	public static String crearRutaNombreArchivo(String nombreOriginal, String extension) {
+		if (extension == null || !extension.equalsIgnoreCase(".txt")) {
+			LOGGER.error(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
+			return null;
+		}
+		return obtenerNombreArchivoSinExtension(nombreOriginal, extension)
+				+ "_" + new Date().toString().replaceAll(":", "-") + extension.replace(" ", "");
+	}
+	
 	public static boolean validarInputLazyLoading(String rutaArchivo) {
 		try (BufferedReader reader = new BufferedReader(new FileReader(new File(rutaArchivo)))) {
 			/* Revisión inicial del archivo: que contenga solo números cada línea 
@@ -102,19 +100,18 @@ public class ArchivoUtils {
 					|| Integer.parseInt(dias) > 500 || Integer.parseInt(dias) < 1 
 					|| !lineasArchivo.skip(1).allMatch(x -> (NumberUtils.isCreatable(x)
 							&& Integer.parseInt(x) >= 1 && Integer.parseInt(x) <= 100))) {
-				LOGGER.debug(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
+				LOGGER.error(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
 				return false;
 			}
 			return true;
 		} catch (IOException e) {
-			LOGGER.debug(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
-			LOGGER.debug(e.getMessage());
+			LOGGER.error(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
 			return false;
 		}
 		
 	}
 	
-	public static List<List<Integer>> convertirArchivoAlista(String rutaArchivo){
+	public static List<List<Integer>> convertirArchivoAlista(String rutaArchivo) {
 		List<List<Integer>> carguePerezoso = new ArrayList<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader(new File(rutaArchivo)))){
 		    int[] lines = reader.lines().filter(x -> !x.equals("")).mapToInt(Integer::parseInt).toArray();
@@ -131,9 +128,8 @@ public class ArchivoUtils {
 		    	}
 		    	contadorDias++;
 		    }
-		} catch (IOException e) {
-			LOGGER.debug(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
-			LOGGER.debug(e.getMessage());
+		} catch (Exception e) {
+			LOGGER.error(new EjecucionException(ARCHIVO_NO_VALIDO).getMessage());
 		} 
 		return carguePerezoso;
 	
